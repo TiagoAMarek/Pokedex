@@ -1,34 +1,24 @@
 import Image from "next/image";
-import { useCallback, useState } from "react";
-
-type PokemonResponse = {
-  name?: string;
-  sprites?: {
-    front_default?: string;
-    back_default?: string;
-  };
-};
+import { useCallback } from "react";
+import { useSearchPokemon } from "../data/use-search-pokemon";
 
 export default function Web() {
-  const [pokemonName, setPokemonName] = useState("");
-  const [pokemonResponse, setPokemonResponse] = useState<
-    undefined | PokemonResponse
-  >();
+  const { trigger, pokemonName, pokemonResponse, setPokemonName } =
+    useSearchPokemon();
 
-  const searchPokemon = useCallback(
-    async (e: { preventDefault: () => void; }) => {
+  const triggerPokemonSearch = useCallback(
+    async (e: { preventDefault: () => void }) => {
       e.preventDefault();
-      const response = await fetch(
-        `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
-      );
-      setPokemonResponse(await response.json());
+      trigger();
     },
-    [pokemonName]
+    []
   );
 
   return (
     <div>
-      <form onSubmit={searchPokemon}>
+      <form
+        onSubmit={triggerPokemonSearch}
+      >
         <label>
           Buscar Pokémon:
           <input
@@ -36,13 +26,15 @@ export default function Web() {
             value={pokemonName}
             onChange={(e) => setPokemonName(e.target.value)}
           ></input>
-          <button className="text-3xl font-bold underline" type="submit">buscar</button>
+          <button className="text-3xl font-bold underline" type="submit">
+            buscar
+          </button>
         </label>
       </form>
 
       {pokemonResponse ? (
         <div>
-          <div className="p-6 max-w-sm mx-auto bg-black rounded-xl shadow-lg flex items-center space-x-4">
+          <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
             <div className="shrink-0">
               <Image
                 src={pokemonResponse.sprites?.front_default ?? ""}
@@ -56,7 +48,6 @@ export default function Web() {
               <div className="text-xl font-medium text-black">
                 {pokemonResponse.name}
               </div>
-              <p className="text-slate-500">You have a new message!</p>
             </div>
           </div>
         </div>
