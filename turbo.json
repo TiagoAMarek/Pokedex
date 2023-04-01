@@ -9,7 +9,10 @@
       "outputs": []
     },
     "dev": {
-      "cache": false
+      "cache": false,
+      "inputs": ["**/*.tsx", "**/*.ts"],
+      "outputs": ["dist/**", ".next/**"],
+      "persistent": true
     }
   }
 }
