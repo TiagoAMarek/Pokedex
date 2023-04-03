@@ -1,57 +1,43 @@
-import Image from "next/image";
-import { useCallback } from "react";
+import { PokemonSprite } from "ui/PokemonSprite";
+import { useCallback, useState } from "react";
 import { useSearchPokemon } from "../data/use-search-pokemon";
 
 export default function Web() {
-  const { trigger, pokemonName, pokemonResponse, setPokemonName } =
-    useSearchPokemon();
+  const [pokemonName, setPokemonName] = useState("");
+  const { pokemonResponse, searchForNewPokemon } = useSearchPokemon();
 
   const triggerPokemonSearch = useCallback(
     async (e: { preventDefault: () => void }) => {
       e.preventDefault();
-      trigger();
+      searchForNewPokemon(pokemonName);
     },
-    []
+    [pokemonName, searchForNewPokemon]
   );
 
+  console.log(pokemonResponse);
   return (
-    <div>
-      <form
-        onSubmit={triggerPokemonSearch}
-      >
+    <div className="container mx-auto px-4">
+      <form onSubmit={triggerPokemonSearch}>
         <label>
-          Buscar Pokémon:
           <input
             type="text"
             value={pokemonName}
             onChange={(e) => setPokemonName(e.target.value)}
           ></input>
-          <button className="text-3xl font-bold underline" type="submit">
-            buscar
+          <button className="text-3xl font-bold" type="submit">
+            Search
           </button>
         </label>
       </form>
 
-      {pokemonResponse ? (
-        <div>
-          <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
-            <div className="shrink-0">
-              <Image
-                src={pokemonResponse.sprites?.front_default ?? ""}
-                alt={`image of ${pokemonResponse.name}`}
-                className="h-12 w-12"
-                width={100}
-                height={100}
-              />
-            </div>
-            <div>
-              <div className="text-xl font-medium text-black">
-                {pokemonResponse.name}
-              </div>
-            </div>
+      {pokemonResponse?.results?.map(({ name, sprites }) => (
+        <div key={name}>
+          <PokemonSprite imageSrc={sprites?.front_default} />
+          <div>
+            <div className="text-xl font-medium">{name}</div>
           </div>
         </div>
-      ) : null}
+      )) ?? null}
     </div>
   );
 }

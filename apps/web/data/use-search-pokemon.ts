@@ -1,5 +1,4 @@
-import { useState } from "react";
-import useSWRMutation from "swr/mutation";
+import useSWR from "swr";
 
 export type PokemonResponse = {
   name?: string;
@@ -9,18 +8,32 @@ export type PokemonResponse = {
   };
 };
 
-const updatePokemon = async (name: string) => {
-  const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-  return response.json();
+export type PokemonsListResponse = {
+  results?: PokemonResponse[];
+};
+
+const fetchPokemons = async (url: string) => {
+  const response = await fetch(`https://pokeapi.co/api/v2${url}`);
+  const body = (await response.json()) as
+    | PokemonResponse
+    | PokemonsListResponse;
+
+  const pokemonsList: PokemonsListResponse =
+    "results" in body ? body : { results: [body as PokemonResponse] };
+
+  return pokemonsList;
 };
 
 export function useSearchPokemon() {
-  const [pokemonName, setPokemonName] = useState("");
-
-  const { data, trigger } = useSWRMutation<PokemonResponse>(
-    pokemonName,
-    updatePokemon
+  const { data: pokemonResponse, mutate } = useSWR<PokemonsListResponse>(
+    "/pokemon",
+    fetchPokemons
   );
 
-  return { pokemonName, setPokemonName, pokemonResponse: data, trigger };
+  const searchForNewPokemon = async (name: string) => {
+    const updatedData = await fetchPokemons(`/pokemon/${name}`);
+    mutate(updatedData);
+  };
+
+  return { pokemonResponse, searchForNewPokemon };
 }
